@@ -23,13 +23,15 @@ pub struct WriterSink<T> {
 
 #[async_trait]
 impl<T> StreamSink<Event> for WriterSink<T>
-where
-    T: io::AsyncWrite + Send + Sync + Unpin,
+    where
+        T: io::AsyncWrite + Send + Sync + Unpin,
 {
     async fn run(mut self: Box<Self>, mut input: BoxStream<'_, Event>) -> Result<(), ()> {
         let bytes_sent = register!(BytesSent::from(Protocol("console".into(),)));
         while let Some(mut event) = input.next().await {
+            println!("{:?}", &event.clone().as_log().value().to_string());
             let event_byte_size = event.size_of();
+
             self.transformer.transform(&mut event);
 
             let finalizers = event.take_finalizers();
@@ -97,6 +99,6 @@ mod test {
             stream::once(ready(event)),
             &SINK_TAGS,
         )
-        .await;
+            .await;
     }
 }

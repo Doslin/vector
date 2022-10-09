@@ -315,7 +315,7 @@ where
 #[cfg(not(windows))]
 fn default_config_paths() -> Vec<ConfigPath> {
     vec![ConfigPath::File(
-        "/etc/vector/vector.toml".into(),
+        "/Users/zhilin/code/rust/vector/config/vector.toml".into(),
         Some(Format::Toml),
     )]
 }

@@ -66,6 +66,7 @@ pub trait FileDescriptorConfig: NamedComponent {
         // https://github.com/tokio-rs/tokio/blob/a73428252b08bf1436f12e76287acbc4600ca0e5/tokio/src/io/stdin.rs#L33-L42
         task::spawn_blocking(move || {
             info!("Capturing {}.", description);
+            println!("Capturing {}.", description);
             read_from_fd(reader, sender);
         });
 
@@ -93,7 +94,7 @@ where
             Err(error) if error.kind() == std::io::ErrorKind::Interrupted => continue,
             Err(error) => (Err(error), 0),
         };
-
+        println!("Capturing {}.", "抓到了写的文字");
         reader.consume(len);
 
         if executor::block_on(sender.send(buffer)).is_err() {
@@ -136,7 +137,8 @@ async fn process_stream(
                         log.try_insert(log_schema().timestamp_key(), now);
 
                         if let Some(hostname) = &hostname {
-                            log.try_insert(host_key.as_str(), hostname.clone());
+                            let _host_key = host_key.as_str();
+                            // log.try_insert(host_key.as_str(), hostname.clone());
                         }
 
                         yield event;

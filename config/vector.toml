@@ -16,25 +16,46 @@
 # data_dir = "/var/lib/vector"
 
 # Random Syslog-formatted logs
-[sources.dummy_logs]
-type = "demo_logs"
-format = "syslog"
-interval = 1
+#[sources.dummy_logs]
+#type = "demo_logs"
+#format = "syslog"
+#interval = 1
+#
+## Parse Syslog logs
+## See the Vector Remap Language reference for more info: https://vrl.dev
+#[transforms.parse_logs]
+#type = "remap"
+#inputs = ["dummy_logs"]
+#source = '''
+#. = parse_syslog!(string!(.message))
+#'''
+#
+## Print parsed logs to stdout
+#[sinks.print]
+#type = "console"
+#inputs = ["parse_logs"]
+#encoding.codec = "json"
 
-# Parse Syslog logs
-# See the Vector Remap Language reference for more info: https://vrl.dev
-[transforms.parse_logs]
-type = "remap"
-inputs = ["dummy_logs"]
-source = '''
-. = parse_syslog!(string!(.message))
-'''
 
-# Print parsed logs to stdout
-[sinks.print]
-type = "console"
-inputs = ["parse_logs"]
-encoding.codec = "json"
+[sources.in]
+    type = "stdin"
+
+
+[transforms.add_host]
+    inputs       = ["in"]
+    type         = "remap"
+    source       = '''
+    .hostname_str = get_env_var!("HOSTNAME")
+    '''
+
+[sinks.out]
+    inputs = ["add_host"]
+    type = "kafka"
+    bootstrap_servers = "172.24.136.193:9092"
+    topic = "topic-1"
+    encoding.codec = "json"
+    batch.max_events = 10
+    batch.timeout_secs = 10 # <---- New!!!
 
 # Vector's GraphQL API (disabled by default)
 # Uncomment to try it out with the `vector top` command or
